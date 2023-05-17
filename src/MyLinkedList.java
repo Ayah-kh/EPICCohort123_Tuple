@@ -204,6 +204,14 @@ public class MyLinkedList<E> {
         return zip(new MyLinkedList<Tuple<E,U>>(),eFirst,uFirst);
     }
 
+    public static <T,U> Tuple<MyLinkedList<T>,MyLinkedList<U>> unZip(MyLinkedList<Tuple<T,U>> zippedList){
+
+        MyLinkedList<T> tMyLinkedList = zippedList.reduceL(new MyLinkedList<T>(), acc -> e -> acc.add(e._1));
+        MyLinkedList<U> uMyLinkedList = zippedList.reduceL(new MyLinkedList<U>(), acc -> e -> acc.add(e._2));
+
+        return new Tuple<>(tMyLinkedList,uMyLinkedList);
+    }
+
 
 
     private <U> MyLinkedList<Tuple<E,U>> zip
