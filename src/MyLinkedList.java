@@ -19,6 +19,16 @@ public class MyLinkedList<E> {
         return myLinkedList;
     }
 
+    public static <T, U> Tuple<MyLinkedList<T>, MyLinkedList<U>> unZip(MyLinkedList<Tuple<T, U>> zippedList) {
+
+        return zippedList.reduceL(new Tuple<>(new MyLinkedList<T>(), new MyLinkedList<U>()),
+                acc -> e -> {
+                    acc._1.add(e._1);
+                    acc._2.add(e._2);
+                    return acc;
+                });
+    }
+
     public MyLinkedList<E> add(E data) {
         return addLast(data);
     }
@@ -136,7 +146,6 @@ public class MyLinkedList<E> {
         return size == 0;
     }
 
-
     public <U> U reduceL(U seed, Function<U, Function<E, U>> function) {
         return reduceL(seed, function, first);
     }
@@ -192,41 +201,32 @@ public class MyLinkedList<E> {
                 e -> acc -> comparator.compare(acc, e) < 0 ? e : acc));
     }
 
-    public MyLinkedList<E> filter(Predicate<E> predicate){
+    public MyLinkedList<E> filter(Predicate<E> predicate) {
         return reduceL(new MyLinkedList<>(),
-                acc->e->predicate.test(e)?acc.add(e):acc);
+                acc -> e -> predicate.test(e) ? acc.add(e) : acc);
     }
 
-    public <U> MyLinkedList<Tuple<E,U>> zip(MyLinkedList<U> anotherList){
-        Node eFirst=first;
-        Node uFirst=(Node) anotherList.first;
+    public <U> MyLinkedList<Tuple<E, U>> zip(MyLinkedList<U> anotherList) {
+        Node eFirst = first;
+        Node uFirst = (Node) anotherList.first;
 
-        return zip(new MyLinkedList<Tuple<E,U>>(),eFirst,uFirst);
+        return zip(new MyLinkedList<Tuple<E, U>>(), eFirst, uFirst);
     }
 
-    public static <T,U> Tuple<MyLinkedList<T>,MyLinkedList<U>> unZip(MyLinkedList<Tuple<T,U>> zippedList){
-
-        MyLinkedList<T> tMyLinkedList = zippedList.reduceL(new MyLinkedList<T>(), acc -> e -> acc.add(e._1));
-        MyLinkedList<U> uMyLinkedList = zippedList.reduceL(new MyLinkedList<U>(), acc -> e -> acc.add(e._2));
-
-        return new Tuple<>(tMyLinkedList,uMyLinkedList);
+    private <U> MyLinkedList<Tuple<E, U>> zip
+            (MyLinkedList<Tuple<E, U>> acc, Node eNode, Node uNode) {
+        return eNode == null || uNode == null
+                ? acc
+                : zip(acc.add(new Tuple<E, U>(eNode.data, (U) uNode.data))
+                , eNode.next, uNode.next);
     }
 
-
-
-    private <U> MyLinkedList<Tuple<E,U>> zip
-            (MyLinkedList<Tuple<E,U>> acc, Node eNode, Node uNode) {
-        return eNode==null||uNode==null
-                ?acc
-                :zip(acc.add(new Tuple<E,U>(eNode.data,(U)uNode.data))
-                ,eNode.next,uNode.next);
-    }
-
-    public Stream<E> stream(){
-        return Stream.iterate(first,n->n!=null, n->n.next)
-                .map(n->n.data);
+    public Stream<E> stream() {
+        return Stream.iterate(first, n -> n != null, n -> n.next)
+                .map(n -> n.data);
 
     }
+
     private class Node {
         private Node next;
         private Node prev;
